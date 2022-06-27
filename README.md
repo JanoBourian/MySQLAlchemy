@@ -74,7 +74,7 @@ If you want more information about Docker please check the info about other cour
 
 # Using Flask and SQLAlchemy to connect with our MySQL database
 
-For a better work is necessary follow the official documentation, please check sqlalchemy docs in [SQLAlchemy docs](https://docs.sqlalchemy.org/en/14/)
+For a better work is necessary follow the official documentation, please check sqlalchemy docs in [SQLAlchemy docs](https://docs.sqlalchemy.org/en/14/) if you have less time please check it [the quickstart guide](https://docs.sqlalchemy.org/en/14/orm/quickstart.html)
 
 The general steps for connect database and SQLAlchemy ORM (And then work with it in Flask) are:
 
