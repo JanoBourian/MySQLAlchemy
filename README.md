@@ -72,7 +72,7 @@ The general steps for connect database and SQLAlchemy ORM (And then work with it
     * Install the dependences: Flask and SQLAlchemy
     * Establishing Connectivity:
         * engine and create_engine.
-        * test connection
+        * test connection with ORM Session
 
 <div id="section2-1"> </div>
 
@@ -106,9 +106,27 @@ with Session(engine) as session:
 
 * [Engine Configuration](https://docs.sqlalchemy.org/en/14/core/engines.html)
 
+* [Engine and Connection Use](https://docs.sqlalchemy.org/en/14/core/engines_connections.html)
+
 * [Create Engine parameters](https://docs.sqlalchemy.org/en/14/core/engines.html#sqlalchemy.create_engine)
 
 * [Session object information](https://docs.sqlalchemy.org/en/14/orm/session_basics.html#id1)
+
+* [Session maker object](https://docs.sqlalchemy.org/en/14/orm/session_api.html#sqlalchemy.orm.sessionmaker)
+
+* [Select Object, a powerfull tool](https://docs.sqlalchemy.org/en/14/core/selectable.html#sqlalchemy.sql.expression.select)
+
+* [Working with data]
+
+* [Data manipulation with the ORM]
+
+* [Working with related Objects]
+
+* [SQL statements](https://docs.sqlalchemy.org/en/14/core/expression_api.html)
+
+* [Relationship configuration](https://docs.sqlalchemy.org/en/14/orm/relationships.html)
+
+* [Important lectures](https://docs.sqlalchemy.org/en/14/tutorial/further_reading.html#tutorial-further-reading)
 
 <div id="section3"> </div>
 
@@ -119,6 +137,18 @@ with Session(engine) as session:
 
 ## List of commands
 
+Here is the list of each importate 
+```python
+import pymysql
+from sqlalchemy import create_engine
+from sqlalchemy import text
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base
+```
+
+--- 
 Establishing a connection
 
 ```python
@@ -168,41 +198,118 @@ with Session(engine) as session:
     result = session.execute(stmt)
     print(result.all())
 ```
+---
 
+Opening and closing a Session: In this case the session is closed automatically for the *with* statement.
 ```python
-engine = create_engine #create the respectly engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+engine = create_engine("Example of connection with pool and dialect")
+with Session(engine) as session:
+    session.add(some_object)
+    session.add(some_other_object)
+    session.commit()
+
 ```
+---
 
+Framing out a begin / commit / rollback block: In case to find an exception. 
 ```python
-engine = create_engine #create the respectly engine
+with Session(engine) as session:
+    session.begin()
+    try:
+        session.add(some_object)
+        session.add(some_other_object)
+    except:
+        session.rollback()
+        raise 
+    else:
+        session.commit()
 ```
+---
 
+The *begin()* method provides a context manager interface for the same sequence of operations.
 ```python
-engine = create_engine #create the respectly engine
+with Session(engine) as session:
+    with session.begin():
+        session.add(some_object)
+        session.add(some_other_object)
+    # inner context calls session.commit(), if there were no exceptions
+# outer context calls session.close()
 ```
+---
 
+Combine context
 ```python
-engine = create_engine #create the respectly engine
+with Session(engine) as session, session.begin():
+    session.add(some_object)
+    session.add(some_other_object)
+# inner context calls session.commit(), if there were no exceptions
+# outer context calls session.close()
 ```
+---
 
+Working with *sessionmaker*
 ```python
-engine = create_engine #create the respectly engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+engine = create_engine()
+
+Session = sessionmaker(engine)
+
+with Session() as session:
+    session.add(some_object)
+    session.add(some_other_other)
+    session.commit()
+# closes the session
 ```
+---
 
+The *sessionmaker* object provides an analogue method like *Engine.begin()* You can use it like this:
 ```python
-engine = create_engine #create the respectly engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+engine = create_engine()
+
+Session = sessionmaker(engine)
+
+with Session.begin() as session:
+    session.add(some_object)
+    session.add(some_other_object)
+# commits the transaction, closes the session
 ```
+---
 
+Querying (old style)
 ```python
-engine = create_engine #create the respectly engine
+results = session.query(User).filter_by(name = "Ed").first()
+results = session.query(User.name, User.fullname).all()
 ```
+---
 
+Querying (new style)
 ```python
-engine = create_engine #create the respectly engine
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+session = Session(engine, future=True)
+
+statement = select(User).filter_by(name="Ed")
+result = session.execute(statement).scalars().all()
+
+statement = select(User, Address).join('addresses').filter_by(name = "Ed")
+result = session.execute(statement).all()
+
+statement = select(User.name, User.fullname)
+result = session.execute(statement).all()
 ```
+---
+
+Declarative Base (MetaData, Table and Column)
 
 ```python
-engine = create_engine #create the respectly engine
+from sqlalchemy.orm import declarative_base
+Base = declarative_base()
 ```
 
 ```python
